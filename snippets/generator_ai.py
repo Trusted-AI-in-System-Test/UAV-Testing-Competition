@@ -14,17 +14,25 @@ class Obstacle_GPT:
         self.add_message("user", user_input)
         openai.api_key = self.api_key
 
-        response = openai.chat.completions.create(
-            model=self.model,
-            messages=self.dialogue_history
-        )
+        while True:
 
-        model_response = response.choices[0].message.content
+            response = openai.chat.completions.create(
+                model=self.model,
+                messages=self.dialogue_history
+            )
+
+            model_response = response.choices[0].message.content
+
+            try:
+                obstacle_config = ast.literal_eval(model_response)
+                break
+
+            except(ValueError, SyntaxError):
+                pass
+
         self.add_message("system", model_response)
 
-        model_response = ast.literal_eval(model_response)
-
-        return model_response
+        return obstacle_config
 
     def update_dialogue_history(self):
 

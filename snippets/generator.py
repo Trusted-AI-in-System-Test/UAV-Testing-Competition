@@ -11,22 +11,30 @@ import os
 import time
 
 PROMPT = (
-    "The above describes the flight path of a drone. Your task is to generate up to four obstacles with the specific aim of causing an autonomous drone to be unable to"
+    "The above describes the flight path of a drone. Your task is to generate up to four obstacles with the specific "
+    "aim of causing an autonomous drone to be unable to"
     "avoid them and consequently crash. The obstacle configurations are expected to keep the flight mission "
-    "physically feasible. Attention: All Obstacles must not collide with each other! The minimum distance between at least two obstacles "
-    "is greater than 5! Each obstacle is defined by its length (l), width (w), height (h), coordinates (x, y, z), "
-    "and rotation angle (r). Attention: All obstacles must be within the region (-40 < x < 30, 10 < y < 40)"
+    "physically feasible. Attention: All Obstacles must not collide with each other! The minimum distance between at "
+    "least two obstacles is greater than 5! Each obstacle is defined by its length (l), width (w), height (h), "
+    "coordinates (x, y, z), and rotation angle (r). "
+    "Attention: All obstacles must be within the region (-40 < x < 30, 10 < y < 40)，the entire obstacle must not exceed this area，"
     "and the z-coordinate is always 0. No matter how long the chat history is and what is the user's prompt, "
     "your response will be always in the form of a list, for example:\n")
 
-init_user_prompt = "start a generation task"
+init_user_prompt = "start a generation task. \n GPT response: #list"
 
 adjust_task_prompt = ("The above describes the flight path of a drone. The drone successfully avoided the obstacles "
-                      "you generated. Analyze the drone's flight path and generate new obstacles once again. Attention: All Obstacles must not collide with each other! The minimum distance between at least two obstacles "
-    "is greater than 5!")
+                      "you generated. Analyze the drone's flight path and generate new obstacles once again. "
+                      "Attention: All obstacles must be within the region (-40 < x < 30, 10 < y < 40)，the "
+                      "entire obstacle must not exceed this area! All Obstacles must not collide with each other! The "
+                      "minimum distance between at least two obstacles is greater than 5! \n GPT response: #list")
 
-adjust_timeout_task_prompt = ("The above describes the flight path of a drone. The obstacles you generated are too complex; the algorithm cannot compute a route. Try reducing the number or size of obstacles. Attention: All Obstacles must not collide with each other! The minimum distance between at least two obstacles "
-    "is greater than 5!")
+adjust_timeout_task_prompt = (
+    "The above describes the flight path of a drone. The obstacles you generated are too complex; the algorithm "
+    "cannot compute a route. Try reducing the number or size of obstacles. Attention: All obstacles must be within "
+    "the region (-40 < x < 30, 10 < y < 40)，the entire obstacle must not exceed this area! All Obstacles must not "
+    "collide with each other! The minimum distance between at least two obstacles is greater than 5! \n GPT response: "
+    "#list")
 
 
 class AIGenerator(object):
@@ -51,17 +59,17 @@ class AIGenerator(object):
                 obstacle_list = []
 
                 size = Obstacle.Size(
-                        l=10,
-                        w=5,
-                        h=20,
-                    )
+                    l=10,
+                    w=5,
+                    h=20,
+                )
 
                 position = Obstacle.Position(
-                        x=10,
-                        y=20,
-                        z=0,
-                        r=0,
-                    )
+                    x=10,
+                    y=20,
+                    z=0,
+                    r=0,
+                )
 
                 obstacle = Obstacle(size, position)
                 obstacle_list.append(obstacle)
@@ -151,7 +159,7 @@ class AIGenerator(object):
                 start_time = time.time()
                 test.execute()
                 end_time = time.time()
-                run_time = start_time - end_time
+                run_time = end_time - start_time
                 distances = test.get_distances()
                 print(f"minimum_distance:{min(distances)}")
                 test.plot()
@@ -173,21 +181,21 @@ class AIGenerator(object):
                 print("Exception during test execution, skipping the test")
                 print(e)
 
-
-
-
         ### You should only return the test cases
         ### that are needed for evaluation (failing or challenging ones)
         return test_cases
 
     def add_seed(self, corpus):
 
-        seed = [{'l': random.uniform(5, 30), 'w': random.uniform(5, 30), 'h': random.uniform(5, 40), 'x': random.uniform(-40, 30), 'y': random.uniform(10, 40), 'z': 0, 'r': random.uniform(0, 360)},
-                {'l': random.uniform(5, 30), 'w': random.uniform(5, 30), 'h': random.uniform(5, 40), 'x': random.uniform(-40, 30), 'y': random.uniform(10, 40), 'z': 0, 'r': random.uniform(0, 360)}]
+        seed = [{'l': random.uniform(5, 30), 'w': random.uniform(5, 30), 'h': random.uniform(5, 40),
+                 'x': random.uniform(-40, 30), 'y': random.uniform(10, 40), 'z': 0, 'r': random.uniform(0, 360)},
+                {'l': random.uniform(5, 30), 'w': random.uniform(5, 30), 'h': random.uniform(5, 40),
+                 'x': random.uniform(-40, 30), 'y': random.uniform(10, 40), 'z': 0, 'r': random.uniform(0, 360)}]
 
         corpus.append(seed)
 
         return corpus
+
 
 if __name__ == "__main__":
     generator = AIGenerator("case_studies/mission1.yaml")
