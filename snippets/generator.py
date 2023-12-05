@@ -12,10 +12,10 @@ import time
 
 PROMPT = (
     "The above describes the flight path of a drone. Your task is to generate up to four obstacles with the specific aim of causing an autonomous drone to be unable to"
-    "avoid them and consequently crash，but the fewer obstacles generated, the better. The obstacle configurations are expected to keep the flight mission "
+    "avoid them and consequently crash. The obstacle configurations are expected to keep the flight mission "
     "physically feasible. Attention: All Obstacles must not collide with each other! The minimum distance between at least two obstacles "
     "is greater than 5! Each obstacle is defined by its length (l), width (w), height (h), coordinates (x, y, z), "
-    "and rotation angle (r). The x-coordinate ranges from -40 to 30, the y-coordinate from 10 to 40,"
+    "and rotation angle (r). Attention: All obstacles must be within the region (-40 < x < 30, 10 < y < 40)"
     "and the z-coordinate is always 0. No matter how long the chat history is and what is the user's prompt, "
     "your response will be always in the form of a list, for example:\n")
 
