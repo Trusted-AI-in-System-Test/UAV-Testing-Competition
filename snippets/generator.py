@@ -36,6 +36,68 @@ adjust_timeout_task_prompt = (
     "collide with each other! The minimum distance between at least two obstacles is greater than 5! \n GPT response: "
     "#list")
 
+adjust_overlap_task_prompt = (
+    "Adjust the obstacles slightly so that they don't collide with each other. Attention: All obstacles must be within"
+    "the region (-40 < x < 30, 10 < y < 40)，the entire obstacle must not exceed this area! All Obstacles must not "
+    "collide with each other! The minimum distance between at least two obstacles is greater than 5! \n GPT response: "
+    "#list"
+)
+
+adjust_outside_area_task_prompt = (
+    "Adjust the obstacles slightly so that the entire obstacle are within the area (-40 < x < 30, 10 < y < 40). Attention: All obstacles must be within"
+    "the region (-40 < x < 30, 10 < y < 40)，the entire obstacle must not exceed this area! All Obstacles must not "
+    "collide with each other! The minimum distance between at least two obstacles is greater than 5! \n GPT response: "
+    "#list"
+)
+
+
+def check_collision(obstacles):
+    text = ""
+    for i in range(len(obstacles)):
+        obstacle1 = obstacles[i]
+        for j in range(i + 1, len(obstacles)):
+            obstacle2 = obstacles[j]
+
+            # 检查碰撞条件
+            if (
+                    obstacle1['x'] + obstacle1['l'] >= obstacle2['x'] and
+                    obstacle1['x'] <= obstacle2['x'] + obstacle2['l'] and
+                    obstacle1['y'] + obstacle1['w'] >= obstacle2['y'] and
+                    obstacle1['y'] <= obstacle2['y'] + obstacle2['w'] and
+                    obstacle1['z'] + obstacle1['h'] >= obstacle2['z'] and
+                    obstacle1['z'] <= obstacle2['z'] + obstacle2['h']
+            ):
+                text += f"obstacle {i + 1} is colliding with obstacle {j + 1}."
+
+    if text == "":
+        return False
+    else:
+        return text
+
+
+def check_within_area(obstacles):
+    text = ""
+    for i, obstacle in enumerate(obstacles):
+        x_min = -40
+        x_max = 30
+        y_min = 10
+        y_max = 40
+
+        if (
+                x_min < obstacle['x'] < x_max and
+                x_min < obstacle['x'] + obstacle['l'] < x_max and
+                y_min < obstacle['y'] < y_max and
+                y_min < obstacle['y'] + obstacle['w'] < y_max
+        ):
+            continue
+        else:
+            text += f"Obstacle {i + 1} is not entirely within the (-40 < x < 30, 10 < y < 40) area."
+
+    if text == "":
+        return False
+    else:
+        return text
+
 
 class AIGenerator(object):
     def __init__(self, case_study_file: str) -> None:
@@ -105,6 +167,18 @@ class AIGenerator(object):
                                                 init_prompt=(flight_trajectory + PROMPT + selected_seed))
                     response = generator_ai.get_response(init_user_prompt)
 
+                    while True:
+                        if not check_collision(response) and not check_within_area(response):
+                            break
+
+                        if check_collision(response):
+                            response = generator_ai.get_response(check_collision(response)+adjust_overlap_task_prompt)
+                            generator_ai.fix_response()
+
+                        elif check_within_area(response):
+                            response = generator_ai.get_response(check_within_area(response)+adjust_outside_area_task_prompt)
+                            generator_ai.fix_response()
+
                     print("GPT: ", response)
                     for obstacle_info in response:
                         size = Obstacle.Size(
@@ -136,6 +210,20 @@ class AIGenerator(object):
                         response = generator_ai.get_response(flight_trajectory + adjust_timeout_task_prompt)
                     else:
                         response = generator_ai.get_response(flight_trajectory + adjust_task_prompt)
+
+                    while True:
+                        if not check_collision(response) and not check_within_area(response):
+                            break
+
+                        if check_collision(response):
+                            response = generator_ai.get_response(check_collision(response) + adjust_overlap_task_prompt)
+                            generator_ai.fix_response()
+
+                        elif check_within_area(response):
+                            response = generator_ai.get_response(
+                                check_within_area(response) + adjust_outside_area_task_prompt)
+                            generator_ai.fix_response()
+                            
                     print("GPT: ", response)
                     for obstacle_info in response:
                         size = Obstacle.Size(

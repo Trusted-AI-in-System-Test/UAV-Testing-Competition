@@ -38,3 +38,7 @@ class Obstacle_GPT:
 
         del self.dialogue_history[1:3]
 
+    def fix_response(self):
+        del self.dialogue_history[-3:-1]
+
+
