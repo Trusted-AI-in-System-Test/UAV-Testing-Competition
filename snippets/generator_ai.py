@@ -1,7 +1,8 @@
 import openai
 import ast
+import os
 class Obstacle_GPT:
-    def __init__(self, api_key, init_prompt, model="gpt-4"):
+    def __init__(self, api_key, init_prompt, model=os.environ.get("chatGPT_model")):
         self.api_key = api_key
         self.model = model
         self.init_prompt = init_prompt
