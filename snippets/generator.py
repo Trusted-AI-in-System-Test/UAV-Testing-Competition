@@ -102,10 +102,6 @@ def check_within_area(obstacles):
 class AIGenerator(object):
     def __init__(self, case_study_file: str) -> None:
         self.case_study = DroneTest.from_yaml(case_study_file)
-        self.corpus = [[{'l': 10, 'w': 5, 'h': 20, 'x': 10, 'y': 20, 'z': 0, 'r': 0},
-                        {'l': 10, 'w': 5, 'h': 20, 'x': -10, 'y': 20, 'z': 0, 'r': 0}],
-                       [{'l': 20, 'w': 20, 'h': 40, 'x': 30, 'y': 20, 'z': 0, 'r': 0},
-                        {'l': 20, 'w': 20, 'h': 40, 'x': -30, 'y': 20, 'z': 0, 'r': 0}]]
 
     def generate(self, budget: int) -> List[TestCase]:
         test_cases = []
@@ -155,8 +151,8 @@ class AIGenerator(object):
             else:
                 if found or init_generate:
                     obstacle_list = []
-                    selected_seed = self.corpus.pop(0)
-                    self.corpus = self.add_seed(self.corpus)
+                    selected_seed = self.get_seed()
+
                     selected_seed = str(selected_seed)
 
                     ulg_files.sort(key=lambda x: os.path.getmtime(os.path.join("results", x)))
@@ -167,17 +163,19 @@ class AIGenerator(object):
                                                 init_prompt=(flight_trajectory + PROMPT + selected_seed))
                     response = generator_ai.get_response(init_user_prompt)
 
+                    fix_time = 0
                     while True:
-                        fix_time = 0
+
                         if not check_collision(response) and not check_within_area(response):
                             break
 
                         if check_collision(response):
-                            response = generator_ai.get_response(check_collision(response)+adjust_overlap_task_prompt)
+                            response = generator_ai.get_response(check_collision(response) + adjust_overlap_task_prompt)
                             generator_ai.fix_response()
 
                         elif check_within_area(response):
-                            response = generator_ai.get_response(check_within_area(response)+adjust_outside_area_task_prompt)
+                            response = generator_ai.get_response(
+                                check_within_area(response) + adjust_outside_area_task_prompt)
                             generator_ai.fix_response()
 
                         fix_time += 1
@@ -218,8 +216,9 @@ class AIGenerator(object):
                     else:
                         response = generator_ai.get_response(flight_trajectory + adjust_task_prompt)
 
+                    fix_time = 0
                     while True:
-                        fix_time = 0
+
                         if not check_collision(response) and not check_within_area(response):
                             break
 
@@ -288,25 +287,38 @@ class AIGenerator(object):
         ### that are needed for evaluation (failing or challenging ones)
         return test_cases
 
-    def add_seed(self, corpus):
-
-        seed = [{'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
-                 'x': random.uniform(-25, 0), 'y': random.uniform(15, 30), 'z': 0, 'r': random.uniform(0, 360)},
-                {'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
-                 'x': random.uniform(10, 20), 'y': random.uniform(15, 30), 'z': 0, 'r': random.uniform(0, 360)}]
-
-        corpus.append(seed)
-
-        return corpus
-
     def get_seed(self):
 
-        seed = [{'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
-                 'x': random.uniform(-25, 0), 'y': random.uniform(15, 30), 'z': 0, 'r': random.uniform(0, 360)},
-                {'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
-                 'x': random.uniform(10, 20), 'y': random.uniform(15, 30), 'z': 0, 'r': random.uniform(0, 360)}]
+        corpus = [[{'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
+                    'x': random.uniform(-25, 0), 'y': random.uniform(15, 30), 'z': 0, 'r': random.uniform(0, 360)},
+                   {'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
+                    'x': random.uniform(10, 20), 'y': random.uniform(15, 30), 'z': 0,
+                    'r': random.uniform(0, 360)}],
+                  [{'l': 3 + random.uniform(0, 3), 'w': 3 + random.uniform(0, 3), 'h': random.uniform(5, 25),
+                    'x': -15 + random.uniform(-5, 1), 'y': 30 + random.uniform(-10, 5), 'z': 0,
+                    'r': random.uniform(0, 360)},
+                   {'l': 2 + random.uniform(0, 1), 'w': 5 + random.uniform(0, 5), 'h': random.uniform(5, 25),
+                    'x': -5 + random.uniform(0, 10), 'y': 25 + random.uniform(-10, 5), 'z': 0,
+                    'r': random.uniform(0, 360)},
+                   {'l': 3 + random.uniform(0, 3), 'w': 2 + random.uniform(0, 5), 'h': random.uniform(5, 25),
+                    'x': 20 + random.uniform(-10, 10), 'y': 12 + random.uniform(0, 10), 'z': 0,
+                    'r': random.uniform(0, 360)}],
+                  [{'l': 3 + random.uniform(0, 3), 'w': 3 + random.uniform(0, 3), 'h': random.uniform(5, 25),
+                    'x': -15 + random.uniform(-5, 1), 'y': 35 + random.uniform(-10, 0), 'z': 0,
+                    'r': random.uniform(0, 360)},
+                   {'l': 3 + random.uniform(0, 3), 'w': 3 + random.uniform(0, 3), 'h': random.uniform(5, 25),
+                    'x': 5 + random.uniform(-1, 1), 'y': 15 + random.uniform(-5, 10), 'z': 0,
+                    'r': random.uniform(0, 360)},
+                   {'l': 3 + random.uniform(0, 3), 'w': 3 + random.uniform(0, 3), 'h': random.uniform(5, 25),
+                    'x': 5 + random.uniform(-1, 2), 'y': 30 + random.uniform(-10, 0), 'z': 0,
+                    'r': random.uniform(0, 360)},
+                   {'l': 3 + random.uniform(0, 3), 'w': 3 + random.uniform(0, 3), 'h': random.uniform(5, 25),
+                    'x': 20 + random.uniform(-1, 5), 'y': 20 + random.uniform(-10, 10), 'z': 0,
+                    'r': random.uniform(0, 360)}]]
 
-        return seed
+        num = random.randint(0, 2)
+
+        return corpus[num]
 
 
 if __name__ == "__main__":
