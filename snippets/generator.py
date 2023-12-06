@@ -168,6 +168,7 @@ class AIGenerator(object):
                     response = generator_ai.get_response(init_user_prompt)
 
                     while True:
+                        fix_time = 0
                         if not check_collision(response) and not check_within_area(response):
                             break
 
@@ -179,6 +180,12 @@ class AIGenerator(object):
                             response = generator_ai.get_response(check_within_area(response)+adjust_outside_area_task_prompt)
                             generator_ai.fix_response()
 
+                        fix_time += 1
+
+                        if fix_time == 10:
+                            break
+
+                    response = self.get_seed()
                     print("GPT: ", response)
                     for obstacle_info in response:
                         size = Obstacle.Size(
@@ -212,6 +219,7 @@ class AIGenerator(object):
                         response = generator_ai.get_response(flight_trajectory + adjust_task_prompt)
 
                     while True:
+                        fix_time = 0
                         if not check_collision(response) and not check_within_area(response):
                             break
 
@@ -223,7 +231,14 @@ class AIGenerator(object):
                             response = generator_ai.get_response(
                                 check_within_area(response) + adjust_outside_area_task_prompt)
                             generator_ai.fix_response()
-                            
+
+                        fix_time += 1
+
+                        if fix_time == 10:
+                            break
+
+                    response = self.get_seed()
+
                     print("GPT: ", response)
                     for obstacle_info in response:
                         size = Obstacle.Size(
@@ -275,14 +290,23 @@ class AIGenerator(object):
 
     def add_seed(self, corpus):
 
-        seed = [{'l': random.uniform(5, 30), 'w': random.uniform(5, 30), 'h': random.uniform(5, 40),
-                 'x': random.uniform(-40, 30), 'y': random.uniform(10, 40), 'z': 0, 'r': random.uniform(0, 360)},
-                {'l': random.uniform(5, 30), 'w': random.uniform(5, 30), 'h': random.uniform(5, 40),
-                 'x': random.uniform(-40, 30), 'y': random.uniform(10, 40), 'z': 0, 'r': random.uniform(0, 360)}]
+        seed = [{'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
+                 'x': random.uniform(-25, 0), 'y': random.uniform(15, 30), 'z': 0, 'r': random.uniform(0, 360)},
+                {'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
+                 'x': random.uniform(10, 20), 'y': random.uniform(15, 30), 'z': 0, 'r': random.uniform(0, 360)}]
 
         corpus.append(seed)
 
         return corpus
+
+    def get_seed(self):
+
+        seed = [{'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
+                 'x': random.uniform(-25, 0), 'y': random.uniform(15, 30), 'z': 0, 'r': random.uniform(0, 360)},
+                {'l': random.uniform(5, 15), 'w': random.uniform(5, 15), 'h': random.uniform(5, 25),
+                 'x': random.uniform(10, 20), 'y': random.uniform(15, 30), 'z': 0, 'r': random.uniform(0, 360)}]
+
+        return seed
 
 
 if __name__ == "__main__":
