@@ -58,7 +58,6 @@ def check_collision(obstacles):
         for j in range(i + 1, len(obstacles)):
             obstacle2 = obstacles[j]
 
-            # 检查碰撞条件
             if (
                     obstacle1['x'] + obstacle1['l'] >= obstacle2['x'] and
                     obstacle1['x'] <= obstacle2['x'] + obstacle2['l'] and
@@ -158,22 +157,26 @@ class AIGenerator(object):
                     ulg_files.sort(key=lambda x: os.path.getmtime(os.path.join("results", x)))
                     logfile = "results/" + ulg_files[0]
                     flight_trajectory = read_ulg(logfile, 20)
-
+                    # calling the api,  generate test case
                     generator_ai = Obstacle_GPT(api_key=os.environ.get("chatGPT_api_key"),
                                                 init_prompt=(flight_trajectory + PROMPT + selected_seed))
                     response = generator_ai.get_response(init_user_prompt)
 
                     fix_time = 0
                     while True:
-
+                        time.sleep(2)
                         if not check_collision(response) and not check_within_area(response):
                             break
 
                         if check_collision(response):
+                            # The test case does not comply with the regulations
+                            # calling the api, regenerate
                             response = generator_ai.get_response(check_collision(response) + adjust_overlap_task_prompt)
                             generator_ai.fix_response()
 
                         elif check_within_area(response):
+                            # The test case does not comply with the regulations
+                            # calling the api, regenerate
                             response = generator_ai.get_response(
                                 check_within_area(response) + adjust_outside_area_task_prompt)
                             generator_ai.fix_response()
@@ -212,21 +215,27 @@ class AIGenerator(object):
                     flight_trajectory = read_ulg(logfile, 20)
                     obstacle_list = []
                     if run_time > 950:
+                        # calling the api,  generate test case
                         response = generator_ai.get_response(flight_trajectory + adjust_timeout_task_prompt)
                     else:
+                        # calling the api,  generate test case
                         response = generator_ai.get_response(flight_trajectory + adjust_task_prompt)
 
                     fix_time = 0
                     while True:
-
+                        time.sleep(2)
                         if not check_collision(response) and not check_within_area(response):
                             break
 
                         if check_collision(response):
+                            # The test case does not comply with the regulations
+                            # calling the api, regenerate
                             response = generator_ai.get_response(check_collision(response) + adjust_overlap_task_prompt)
                             generator_ai.fix_response()
 
                         elif check_within_area(response):
+                            # The test case does not comply with the regulations
+                            # calling the api, regenerate
                             response = generator_ai.get_response(
                                 check_within_area(response) + adjust_outside_area_task_prompt)
                             generator_ai.fix_response()
