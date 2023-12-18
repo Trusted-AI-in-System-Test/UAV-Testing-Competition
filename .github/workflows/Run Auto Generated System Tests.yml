@@ -14,5 +14,5 @@ jobs:
                 cd ./snippets
                 sudo docker build -t aerialist .
                 cd ..
-                sudo docker exec -it 270f6d  python3 cli.py generate case_studies/mission1.yaml 4
+                sudo docker exec $(docker run --env-file .env -d aerialist) python3 cli.py generate case_studies/mission1.yaml 4
             
