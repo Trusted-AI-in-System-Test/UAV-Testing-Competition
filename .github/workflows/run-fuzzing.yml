@@ -10,9 +10,9 @@ jobs:
             - uses: docker-practice/actions-setup-docker@master
               timeout-minutes: 5
             - run: |
+                cd ./snippets
                 sudo docker build -t aerialist .
                 cd ..
                 sudo docker exec -it $(docker run --env-file .env -dit aerialist) bash
                 python3 cli.py generate snippets/case_studies/mission1.yaml 4
-              working-directory: ./snippets
             
