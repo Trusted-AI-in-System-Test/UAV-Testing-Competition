@@ -1,6 +1,6 @@
 name: run-fuzzing
 run-name: Fuzzing system test triggered by @${{ github.actor }}
-on: []
+on: workflow_dispatch
 
 jobs:
     run-aerialist-fuzzer:
