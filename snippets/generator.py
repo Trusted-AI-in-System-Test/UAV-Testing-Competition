@@ -108,7 +108,6 @@ class AIGenerator(object):
         case_no = 0
 
         for i in range(budget):
-            ulg_files = [f for f in os.listdir("results") if f.endswith('.ulg')]
 
             if i == 0:
                 print("initial generation")
