@@ -154,8 +154,6 @@ class AIGenerator(object):
 
                     selected_seed = str(selected_seed)
 
-                    ulg_files.sort(key=lambda x: os.path.getmtime(os.path.join("results", x)))
-                    logfile = "results/" + ulg_files[0]
                     flight_trajectory = read_ulg(logfile, 20)
                     # calling the api,  generate test case
                     generator_ai = Obstacle_GPT(api_key=os.environ.get("chatGPT_api_key"),
@@ -208,10 +206,6 @@ class AIGenerator(object):
                     init_generate = False
 
                 else:
-
-                    ulg_files = [f for f in os.listdir("results") if f.endswith('.ulg')]
-                    ulg_files.sort(key=lambda x: os.path.getmtime(os.path.join("results", x)))
-                    logfile = "results/" + ulg_files[-1]
                     flight_trajectory = read_ulg(logfile, 20)
                     obstacle_list = []
                     if run_time > 950:
@@ -274,6 +268,8 @@ class AIGenerator(object):
                 distances = test.get_distances()
                 print(f"minimum_distance:{min(distances)}")
                 test.plot()
+                if i == 0:
+                    initial_log = test.log_file
 
                 if case_no > 2:
                     generator_ai.update_dialogue_history()
@@ -283,10 +279,12 @@ class AIGenerator(object):
                 if min(distances) <= 1.5:
                     found = True
                     test_cases.append(test)
+                    logfile = initial_log
 
                 else:
 
                     found = False
+                    logfile = test.log_file
 
             except Exception as e:
                 print("Exception during test execution, skipping the test")
